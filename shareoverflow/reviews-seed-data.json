@@ -1,0 +1,143 @@
+[
+  {
+    "rating": 5,
+    "comment": "Mind-bending masterpiece! Christopher Nolan at his finest. The concept of dream within a dream is executed flawlessly. The visual effects are stunning and the plot keeps you engaged throughout.",
+    "createdAt": "2024-01-15T10:30:00Z",
+    "movieTitle": "Inception",
+    "userEmail": "admin@test.com"
+  },
+  {
+    "rating": 4,
+    "comment": "Great concept but a bit confusing at times. The ending leaves you thinking. Overall a solid sci-fi film with impressive visuals.",
+    "createdAt": "2024-01-18T14:20:00Z",
+    "movieTitle": "Inception",
+    "userEmail": "daniel@test.com"
+  },
+  {
+    "rating": 5,
+    "comment": "Heath Ledger's Joker is absolutely phenomenal. One of the best superhero movies ever made! The dark tone and complex characters make this a masterpiece.",
+    "createdAt": "2024-01-20T14:20:00Z",
+    "movieTitle": "The Dark Knight",
+    "userEmail": "admin@test.com"
+  },
+  {
+    "rating": 5,
+    "comment": "Perfect blend of action and drama. Christian Bale and Heath Ledger deliver incredible performances. A must-watch for any movie fan!",
+    "createdAt": "2024-01-22T09:15:00Z",
+    "movieTitle": "The Dark Knight",
+    "userEmail": "daniel@test.com"
+  },
+  {
+    "rating": 5,
+    "comment": "Beautiful visuals and emotional story. The ending brought me to tears. A bit long but worth every minute. Hans Zimmer's score is incredible.",
+    "createdAt": "2024-02-01T09:15:00Z",
+    "movieTitle": "Interstellar",
+    "userEmail": "daniel@test.com"
+  },
+  {
+    "rating": 4,
+    "comment": "Amazing cinematography and thought-provoking themes about love and time. The science is a bit far-fetched but the emotional core is strong.",
+    "createdAt": "2024-02-05T16:45:00Z",
+    "movieTitle": "Interstellar",
+    "userEmail": "admin@test.com"
+  },
+  {
+    "rating": 5,
+    "comment": "Tarantino's best work! The non-linear storytelling is brilliant. Every scene is iconic. Samuel L. Jackson and John Travolta are perfect.",
+    "createdAt": "2024-02-10T16:45:00Z",
+    "movieTitle": "Pulp Fiction",
+    "userEmail": "admin@test.com"
+  },
+  {
+    "rating": 4,
+    "comment": "Stylish and entertaining. The dialogue is sharp and memorable. Some scenes are quite intense but it's a classic for a reason.",
+    "createdAt": "2024-02-12T11:30:00Z",
+    "movieTitle": "Pulp Fiction",
+    "userEmail": "daniel@test.com"
+  },
+  {
+    "rating": 5,
+    "comment": "Revolutionary filmmaking. The bullet time effects changed cinema forever. A must-watch! The philosophy and action blend perfectly.",
+    "createdAt": "2024-02-15T11:30:00Z",
+    "movieTitle": "The Matrix",
+    "userEmail": "daniel@test.com"
+  },
+  {
+    "rating": 5,
+    "comment": "Groundbreaking visual effects and a thought-provoking story. Keanu Reeves is perfect as Neo. This movie defined a generation.",
+    "createdAt": "2024-02-18T13:00:00Z",
+    "movieTitle": "The Matrix",
+    "userEmail": "admin@test.com"
+  },
+  {
+    "rating": 4,
+    "comment": "Tom Hanks delivers an incredible performance. Heartwarming and inspiring story. Makes you believe that anything is possible.",
+    "createdAt": "2024-02-20T13:00:00Z",
+    "movieTitle": "Forrest Gump",
+    "userEmail": "admin@test.com"
+  },
+  {
+    "rating": 5,
+    "comment": "A beautiful journey through American history. Tom Hanks is phenomenal. The soundtrack is perfect. One of my all-time favorites!",
+    "createdAt": "2024-02-22T10:00:00Z",
+    "movieTitle": "Forrest Gump",
+    "userEmail": "daniel@test.com"
+  },
+  {
+    "rating": 5,
+    "comment": "Perfect storytelling. The friendship between Andy and Red is beautifully portrayed. A timeless classic that never gets old.",
+    "createdAt": "2024-03-01T10:00:00Z",
+    "movieTitle": "The Shawshank Redemption",
+    "userEmail": "daniel@test.com"
+  },
+  {
+    "rating": 5,
+    "comment": "The greatest film of all time. Every scene is perfect. Morgan Freeman's narration is iconic. Hope is a powerful thing.",
+    "createdAt": "2024-03-03T15:30:00Z",
+    "movieTitle": "The Shawshank Redemption",
+    "userEmail": "admin@test.com"
+  },
+  {
+    "rating": 5,
+    "comment": "The greatest film of all time. Marlon Brando and Al Pacino are incredible. Masterpiece! The Godfather is cinema at its finest.",
+    "createdAt": "2024-03-05T15:30:00Z",
+    "movieTitle": "The Godfather",
+    "userEmail": "admin@test.com"
+  },
+  {
+    "rating": 5,
+    "comment": "A perfect crime drama. The acting, directing, and writing are all flawless. This is how you make a movie. An absolute classic.",
+    "createdAt": "2024-03-08T12:20:00Z",
+    "movieTitle": "The Godfather",
+    "userEmail": "daniel@test.com"
+  },
+  {
+    "rating": 4,
+    "comment": "Dark and thought-provoking. The twist ending is unforgettable. Brad Pitt and Edward Norton are amazing. Makes you question everything.",
+    "createdAt": "2024-03-10T12:20:00Z",
+    "movieTitle": "Fight Club",
+    "userEmail": "daniel@test.com"
+  },
+  {
+    "rating": 5,
+    "comment": "Brilliant social commentary wrapped in an intense thriller. The first rule is you don't talk about Fight Club, but I have to - it's amazing!",
+    "createdAt": "2024-03-12T14:45:00Z",
+    "movieTitle": "Fight Club",
+    "userEmail": "admin@test.com"
+  },
+  {
+    "rating": 5,
+    "comment": "Epic fantasy adventure! The world-building is incredible. Peter Jackson did an amazing job bringing Tolkien's vision to life.",
+    "createdAt": "2024-03-15T14:45:00Z",
+    "movieTitle": "The Lord of the Rings: The Fellowship of the Ring",
+    "userEmail": "admin@test.com"
+  },
+  {
+    "rating": 5,
+    "comment": "A perfect adaptation of the book. The cinematography is breathtaking. The characters are well-developed and the story is epic. Can't wait to watch the sequels!",
+    "createdAt": "2024-03-18T16:00:00Z",
+    "movieTitle": "The Lord of the Rings: The Fellowship of the Ring",
+    "userEmail": "daniel@test.com"
+  }
+]
+
