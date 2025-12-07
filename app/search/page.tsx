@@ -6,6 +6,9 @@ import Link from "next/link";
 import axios from "axios";
 import { useAuth } from "../AuthProvider";
 
+// Force dynamic rendering to work with useSearchParams
+export const dynamic = 'force-dynamic';
+
 interface SearchResult {
   Title: string;
   Year: string;
