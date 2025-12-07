@@ -23,10 +23,10 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
     
     // Try to find user - search in base model which includes all discriminators
     // The base UserModel should find users regardless of discriminator type
+    // Note: We don't populate reviews here since we handle it manually below
     console.log(`[GET /api/users/${userId}] Querying UserModel with ObjectId: ${userObjectId}`);
     let user = await UserModel.findOne({ _id: userObjectId })
       .populate("favorites")
-      .populate("reviews")
       .populate("following", "_id username")
       .populate("followers", "_id username")
       .lean();
@@ -36,7 +36,6 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
       console.log(`[GET /api/users/${userId}] UserModel.findOne failed, trying findById`);
       user = await UserModel.findById(userObjectId)
         .populate("favorites")
-        .populate("reviews")
         .populate("following", "_id username")
         .populate("followers", "_id username")
         .lean();
@@ -56,13 +55,42 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
 
     console.log(`[GET /api/users/${userId}] User found: ${user.username || user.email}`);
 
-    if (user.reviews) {
-      const movieIds = user.reviews.map((r: any) => r.movieId);
-      const movies = await MovieModel.find({ _id: { $in: movieIds } });
-      user.reviews = user.reviews.map((r: any) => ({
-        ...r,
-        movie: movies.find((m) => m._id.equals(r.movieId)),
-      }));
+    // Manually populate reviews since we removed it from the query
+    // This avoids the Review model registration issue with populate
+    if (user.reviews && Array.isArray(user.reviews) && user.reviews.length > 0) {
+      // Check if reviews are ObjectIds (not yet populated) or already objects
+      const firstReview = user.reviews[0];
+      const isObjectId = firstReview instanceof mongoose.Types.ObjectId || 
+                        (typeof firstReview === 'string' && mongoose.Types.ObjectId.isValid(firstReview));
+      
+      if (isObjectId) {
+        // Reviews are ObjectIds, fetch them
+        const reviewIds = user.reviews.map((r: any) => 
+          r instanceof mongoose.Types.ObjectId ? r : new mongoose.Types.ObjectId(r)
+        );
+        const reviews = await ReviewModel.find({ _id: { $in: reviewIds } }).lean();
+        const movieIds = reviews.map((r: any) => r.movieId).filter((id: any) => id);
+        const movies = movieIds.length > 0 
+          ? await MovieModel.find({ _id: { $in: movieIds } }).lean()
+          : [];
+        user.reviews = reviews.map((r: any) => ({
+          ...r,
+          _id: r._id.toString(),
+          movie: movies.find((m: any) => m._id.toString() === r.movieId?.toString()),
+        }));
+      } else {
+        // Reviews are already populated objects, just add movie info
+        const movieIds = user.reviews.map((r: any) => r.movieId).filter((id: any) => id);
+        if (movieIds.length > 0) {
+          const movies = await MovieModel.find({ _id: { $in: movieIds } }).lean();
+          user.reviews = user.reviews.map((r: any) => ({
+            ...r,
+            movie: movies.find((m: any) => m._id.toString() === r.movieId?.toString()),
+          }));
+        }
+      }
+    } else {
+      user.reviews = [];
     }
 
     if (!viewerId || viewerId !== userId) {
