@@ -31,7 +31,11 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
     
     return Response.json({ success: true, message: "Movie added to favorites" });
   } catch (error: any) {
-    return Response.json({ error: error.message }, { status: 500 });
+    console.error("Error in POST /api/users/[id]/favorite/[movieId]:", error);
+    return Response.json(
+      { error: error.message || "Failed to add favorite" },
+      { status: 500 }
+    );
   }
 }
 
@@ -62,7 +66,11 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ i
     
     return Response.json({ success: true, message: "Movie removed from favorites" });
   } catch (error: any) {
-    return Response.json({ error: error.message }, { status: 500 });
+    console.error("Error in POST /api/users/[id]/favorite/[movieId]:", error);
+    return Response.json(
+      { error: error.message || "Failed to add favorite" },
+      { status: 500 }
+    );
   }
 }
 

@@ -49,6 +49,7 @@ export default function Home() {
               </Link>
               <div className="flex gap-6">
                 <Link href="/" className="text-gray-700 hover:text-blue-600">Home</Link>
+                <Link href="/search" className="text-gray-700 hover:text-blue-600">Search</Link>
                 {user && <Link href="/profile" className="text-gray-700 hover:text-blue-600">Profile</Link>}
                 {isAdmin && <Link href="/admin" className="text-red-600 hover:text-red-700">Admin</Link>}
               </div>
@@ -129,6 +130,9 @@ export default function Home() {
           <div className="flex gap-4 justify-center">
             {user ? (
               <>
+                <Link href="/search" className="px-6 py-2 bg-white text-blue-600 rounded hover:bg-gray-100">
+                  Search Movies
+                </Link>
                 <Link href="/profile" className="px-6 py-2 bg-white text-blue-600 rounded hover:bg-gray-100">
                   View Profile
                 </Link>
@@ -140,6 +144,9 @@ export default function Home() {
               </>
             ) : (
               <>
+                <Link href="/search" className="px-6 py-2 bg-white text-blue-600 rounded hover:bg-gray-100">
+                  Search Movies
+                </Link>
                 <Link href="/register" className="px-6 py-2 bg-white text-blue-600 rounded hover:bg-gray-100">
                   Get Started
                 </Link>

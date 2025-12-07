@@ -6,54 +6,70 @@ import { MovieModel } from "@/models/Movie";
 import mongoose from "mongoose";
 
 export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
-  await connectToDB();
-  const { id } = await params;
+  try {
+    await connectToDB();
+    const { id } = await params;
 
-  if (!mongoose.Types.ObjectId.isValid(id)) {
-    return Response.json({ error: "Invalid review ID format" }, { status: 400 });
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return Response.json({ error: "Invalid review ID format" }, { status: 400 });
+    }
+
+    const review = await ReviewModel.findById(id)
+      .populate("userId", "_id username")
+      .populate("movieId", "_id title")
+      .lean();
+
+    if (!review) {
+      return Response.json({ error: "Review not found" }, { status: 404 });
+    }
+
+    return Response.json(review);
+  } catch (error: any) {
+    console.error("Error in GET /api/reviews/[id]:", error);
+    return Response.json(
+      { error: error.message || "Failed to fetch review" },
+      { status: 500 }
+    );
   }
-
-  const review = await ReviewModel.findById(id)
-    .populate("userId", "_id username")
-    .populate("movieId", "_id title")
-    .lean();
-
-  if (!review) {
-    return Response.json({ error: "Review not found" }, { status: 404 });
-  }
-
-  return Response.json(review);
 }
 
 export async function DELETE(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
-  await connectToDB();
-  const { id } = await params;
+  try {
+    await connectToDB();
+    const { id } = await params;
 
-  if (!mongoose.Types.ObjectId.isValid(id)) {
-    return Response.json({ error: "Invalid review ID format" }, { status: 400 });
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return Response.json({ error: "Invalid review ID format" }, { status: 400 });
+    }
+
+    const review = await ReviewModel.findById(id);
+
+    if (!review) {
+      return Response.json({ error: "Review not found" }, { status: 404 });
+    }
+
+    // Remove review reference from movie
+    await MovieModel.updateOne(
+      { _id: review.movieId },
+      { $pull: { reviews: review._id } }
+    );
+
+    // Remove review reference from user
+    await UserModel.updateOne(
+      { _id: review.userId },
+      { $pull: { reviews: review._id } }
+    );
+
+    // Delete the review
+    await ReviewModel.findByIdAndDelete(id);
+
+    return Response.json({ message: "Review deleted successfully", deletedId: id });
+  } catch (error: any) {
+    console.error("Error in DELETE /api/reviews/[id]:", error);
+    return Response.json(
+      { error: error.message || "Failed to delete review" },
+      { status: 500 }
+    );
   }
-
-  const review = await ReviewModel.findById(id);
-
-  if (!review) {
-    return Response.json({ error: "Review not found" }, { status: 404 });
-  }
-
-  // Remove review reference from movie
-  await MovieModel.updateOne(
-    { _id: review.movieId },
-    { $pull: { reviews: review._id } }
-  );
-
-  // Remove review reference from user
-  await UserModel.updateOne(
-    { _id: review.userId },
-    { $pull: { reviews: review._id } }
-  );
-
-  // Delete the review
-  await ReviewModel.findByIdAndDelete(id);
-
-  return Response.json({ message: "Review deleted successfully", deletedId: id });
 }
 
