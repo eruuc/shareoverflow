@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import axios from "axios";
@@ -21,7 +21,7 @@ interface SearchResponse {
   Error?: string;
 }
 
-export default function SearchPage() {
+function SearchPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { user } = useAuth();
@@ -359,5 +359,40 @@ export default function SearchPage() {
         )}
       </main>
     </div>
+  );
+}
+
+export default function SearchPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-gray-100 flex flex-col">
+        <nav className="bg-white border-b-2 border-gray-300 shadow-sm">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 py-4">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-8 w-full sm:w-auto">
+                <Link href="/" className="text-xl font-bold text-blue-600 hover:text-blue-700 transition-colors">
+                  ShareOverflow
+                </Link>
+                <div className="flex flex-wrap gap-4 sm:gap-6">
+                  <Link href="/" className="text-gray-700 hover:text-blue-600 transition-colors text-sm sm:text-base">
+                    Home
+                  </Link>
+                  <Link href="/search" className="text-gray-700 hover:text-blue-600 transition-colors text-sm sm:text-base font-medium">
+                    Search
+                  </Link>
+                </div>
+              </div>
+            </div>
+          </div>
+        </nav>
+        <main className="flex-1 max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
+          <div className="text-center py-12">
+            <p className="text-gray-600 text-lg">Loading search page...</p>
+          </div>
+        </main>
+      </div>
+    }>
+      <SearchPageContent />
+    </Suspense>
   );
 }
