@@ -19,8 +19,10 @@ export default function ProfilePage() {
   useEffect(() => {
     if (!userId) return;
     setLoading(true);
+    console.log("Fetching profile for userId:", userId);
     axios.get(`/api/users/${userId}?viewerId=${userId}`)
       .then(res => {
+        console.log("Profile data received:", res.data);
         setProfileData(res.data);
         setEmail(res.data.email || "");
         setPhone(res.data.phone || "");
@@ -28,6 +30,8 @@ export default function ProfilePage() {
       })
       .catch(err => {
         console.error("Error fetching profile:", err);
+        console.error("Error response:", err.response?.data);
+        console.error("User ID used:", userId);
         setLoading(false);
         if (err.response?.status === 404) {
           setProfileData(null);
