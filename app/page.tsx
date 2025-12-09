@@ -15,8 +15,16 @@ export default function Home() {
   useEffect(() => {
     async function loadMovies() {
       try {
-        const res = await axios.get("/api/movies");
-        setMovies(res.data.slice(0, 6));
+        if (user) {
+          // Load user's favorited movies
+          const res = await axios.get(`/api/users/${user._id}`);
+          setMovies(res.data.favorites || []);
+        } else {
+          // Load random featured movies for non-logged-in users
+          const res = await axios.get("/api/movies");
+          const shuffled = res.data.sort(() => Math.random() - 0.5);
+          setMovies(shuffled.slice(0, 6));
+        }
         setLoading(false);
       } catch (err) {
         console.error("Error loading movies:", err);
@@ -24,7 +32,7 @@ export default function Home() {
       }
     }
     loadMovies();
-  }, []);
+  }, [user]);
 
   const handleLike = (movieId: string) => {
     if (!user) {
@@ -61,7 +69,7 @@ export default function Home() {
                   <button
                     onClick={() => {
                       logout();
-                      router.push("/login");
+                      router.push("/");
                     }}
                     className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
                   >
@@ -160,7 +168,9 @@ export default function Home() {
 
         {/* Movies Section */}
         <div className="mt-8">
-          <h2 className="text-2xl font-bold text-gray-800 mb-4">Featured Movies</h2>
+          <h2 className="text-2xl font-bold text-gray-800 mb-4">
+            {user ? "Your Favorite Movies" : "Featured Movies"}
+          </h2>
           {loading ? (
             <div className="text-center py-8">
               <p className="text-gray-600">Loading movies...</p>
@@ -212,14 +222,25 @@ export default function Home() {
             </div>
           ) : (
             <div className="text-center py-12 bg-white border border-gray-300 rounded">
-              <p className="text-gray-600 mb-4">No movies available yet.</p>
-              {user && (user.role === "AdminUser" || user.roles?.includes("AdminUser") || user.roles?.includes("admin")) && (
+              <p className="text-gray-600 mb-4">
+                {user ? "You haven't added any favorite movies yet." : "No movies available yet."}
+              </p>
+              {user ? (
                 <Link
-                  href="/admin"
+                  href="/search"
                   className="inline-block px-6 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
                 >
-                  Add Movies
+                  Search and Add Favorites
                 </Link>
+              ) : (
+                user && (user.role === "AdminUser" || user.roles?.includes("AdminUser") || user.roles?.includes("admin")) && (
+                  <Link
+                    href="/admin"
+                    className="inline-block px-6 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+                  >
+                    Add Movies
+                  </Link>
+                )
               )}
             </div>
           )}
