@@ -225,23 +225,21 @@ export default function Home() {
               <p className="text-gray-600 mb-4">
                 {user ? "You haven't added any favorite movies yet." : "No movies available yet."}
               </p>
-              {user ? (
+              {isAdmin ? (
+                <Link
+                  href="/admin"
+                  className="inline-block px-6 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+                >
+                  Add Movies
+                </Link>
+              ) : user ? (
                 <Link
                   href="/search"
                   className="inline-block px-6 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
                 >
                   Search and Add Favorites
                 </Link>
-              ) : (
-                user && (user.role === "AdminUser" || user.roles?.includes("AdminUser") || user.roles?.includes("admin")) && (
-                  <Link
-                    href="/admin"
-                    className="inline-block px-6 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
-                  >
-                    Add Movies
-                  </Link>
-                )
-              )}
+              ) : null}
             </div>
           )}
         </div>
