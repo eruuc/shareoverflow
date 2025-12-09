@@ -21,14 +21,15 @@ app.prepare().then(() => {
   const reviewsRoutes = require('./routes/reviews');
   const authRoutes = require('./routes/auth');
 
-  // Mount API routes
+  // Mount API routes (must come before Next.js handler)
   server.use('/api/movies', moviesRoutes);
   server.use('/api/users', usersRoutes);
   server.use('/api/reviews', reviewsRoutes);
   server.use('/api/auth', authRoutes);
 
   // Handle Next.js pages - catch all routes not handled by API
-  server.use((req, res) => {
+  // This ensures app/page.tsx is served at the root route (/)
+  server.get('*', (req, res) => {
     return handle(req, res);
   });
 
