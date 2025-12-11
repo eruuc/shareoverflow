@@ -29,7 +29,8 @@ app.prepare().then(() => {
 
   // Handle Next.js pages - catch all routes not handled by API
   // This ensures app/page.tsx is served at the root route (/)
-  server.get('*', (req, res) => {
+  // Using server.use() without a path creates a catch-all middleware
+  server.use((req, res) => {
     return handle(req, res);
   });
 
