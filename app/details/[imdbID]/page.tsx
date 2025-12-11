@@ -59,6 +59,7 @@ export default function MovieDetailsPage() {
   const [reviewForm, setReviewForm] = useState({ rating: 5, comment: "" });
   const [showReviewForm, setShowReviewForm] = useState(false);
   const [isFavorited, setIsFavorited] = useState(false);
+  const [isFavoriting, setIsFavoriting] = useState(false);
 
   useEffect(() => {
     async function loadMovieDetails() {
@@ -151,6 +152,9 @@ export default function MovieDetailsPage() {
       return;
     }
 
+    if (isFavoriting) return; // Prevent multiple clicks
+
+    setIsFavoriting(true);
     try {
       if (isFavorited) {
         await axios.delete(`/api/users/${user._id}/favorite/${localMovie._id}`);
@@ -159,9 +163,11 @@ export default function MovieDetailsPage() {
         await axios.post(`/api/users/${user._id}/favorite/${localMovie._id}`);
         setIsFavorited(true);
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error("Error favoriting movie:", err);
-      alert("Failed to update favorite status");
+      alert(err.response?.data?.error || "Failed to update favorite status. Please try again.");
+    } finally {
+      setIsFavoriting(false);
     }
   };
 
@@ -321,10 +327,15 @@ export default function MovieDetailsPage() {
                 {localMovie && user && (
                   <button
                     onClick={handleFavorite}
-                    className={`text-3xl ${isFavorited ? "text-red-600" : "text-gray-400"} hover:text-red-600`}
-                    title={isFavorited ? "Remove from favorites" : "Add to favorites"}
+                    disabled={isFavoriting}
+                    className={`px-4 py-2 rounded-md font-medium text-white transition-all duration-200 transform ${
+                      isFavorited 
+                        ? "bg-red-600 hover:bg-red-700 hover:scale-105 shadow-md" 
+                        : "bg-gray-400 hover:bg-red-500 hover:scale-105"
+                    } ${isFavoriting ? "opacity-50 cursor-wait" : "cursor-pointer"}`}
+                    title={isFavoriting ? "Updating..." : isFavorited ? "Remove from favorites" : "Add to favorites"}
                   >
-                    ❤️
+                    {isFavoriting ? "Updating..." : isFavorited ? "❤️ Favorited" : "🤍 Favorite"}
                   </button>
                 )}
               </div>

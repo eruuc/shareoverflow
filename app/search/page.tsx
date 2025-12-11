@@ -15,6 +15,8 @@ interface SearchResult {
   imdbID: string;
   Type: string;
   Poster: string;
+  _id?: string; // For database movies
+  isDatabaseMovie?: boolean; // Flag to distinguish database vs OMDB movies
 }
 
 interface SearchResponse {
@@ -37,6 +39,45 @@ function SearchPageContent() {
   const [hasSearched, setHasSearched] = useState(false);
   const [lastSearchedQuery, setLastSearchedQuery] = useState<string>("");
   const [lastSearchedPage, setLastSearchedPage] = useState<number>(0);
+  const [loadingDatabaseMovies, setLoadingDatabaseMovies] = useState(false);
+
+  // Load database movies on initial page load (when no search query)
+  useEffect(() => {
+    const query = searchParams.get("q");
+    
+    // Only load database movies if there's no search query
+    if (!query) {
+      const loadDatabaseMovies = async () => {
+        setLoadingDatabaseMovies(true);
+        setHasSearched(false); // Reset search state when showing database movies
+        try {
+          const res = await axios.get("/api/movies?limit=12");
+          // Transform database movies to SearchResult format
+          const transformedMovies: SearchResult[] = res.data.map((movie: any) => ({
+            Title: movie.title,
+            Year: movie.releaseYear?.toString() || "",
+            imdbID: movie._id?.toString() || "", // Use database ID as identifier
+            Type: "movie",
+            Poster: movie.posterURL || "",
+            _id: movie._id?.toString(),
+            isDatabaseMovie: true
+          }));
+          setResults(transformedMovies);
+          setTotalResults(res.data.length);
+        } catch (err: any) {
+          console.error("Error loading database movies:", err);
+          // Don't show error for database movies, just leave empty
+          setResults([]);
+          setTotalResults(0);
+        } finally {
+          setLoadingDatabaseMovies(false);
+        }
+      };
+      
+      loadDatabaseMovies();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParams]);
 
   // Check if there's a search query in the URL
   useEffect(() => {
@@ -57,6 +98,7 @@ function SearchPageContent() {
         setLoading(true);
         setError("");
         setHasSearched(true);
+        setResults([]); // Clear database movies when searching
 
         try {
           // OMDB returns 10 results per page, we want 12 per page
@@ -252,25 +294,33 @@ function SearchPageContent() {
         )}
 
         {/* Results Count */}
-        {hasSearched && !loading && (
+        {(hasSearched || results.length > 0) && !loading && !loadingDatabaseMovies && (
           <div className="mb-4 sm:mb-6">
             <p className="text-gray-700 text-left text-sm sm:text-base">
-              {totalResults > 0 
-                ? `Found ${formatNumber(totalResults)} result${totalResults !== 1 ? 's' : ''}`
-                : "No results found"}
+              {hasSearched ? (
+                totalResults > 0 
+                  ? `Found ${formatNumber(totalResults)} result${totalResults !== 1 ? 's' : ''}`
+                  : "No results found"
+              ) : (
+                results.length > 0
+                  ? `Showing ${formatNumber(results.length)} movie${results.length !== 1 ? 's' : ''} from database`
+                  : ""
+              )}
             </p>
           </div>
         )}
 
         {/* Loading State */}
-        {loading && (
+        {(loading || loadingDatabaseMovies) && (
           <div className="text-center py-12 sm:py-16">
-            <p className="text-gray-600 text-lg sm:text-xl">Searching...</p>
+            <p className="text-gray-600 text-lg sm:text-xl">
+              {loading ? "Searching..." : "Loading movies..."}
+            </p>
           </div>
         )}
 
         {/* Results Grid */}
-        {!loading && results.length > 0 && (
+        {!loading && !loadingDatabaseMovies && results.length > 0 && (
           <>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6 mb-6 sm:mb-8">
               {results.map((movie, index) => (
@@ -304,7 +354,7 @@ function SearchPageContent() {
                     </p>
                     <div className="mt-auto">
                       <Link
-                        href={`/details/${movie.imdbID}`}
+                        href={movie.isDatabaseMovie ? `/movies/${movie._id || movie.imdbID}` : `/details/${movie.imdbID}`}
                         className="block w-full text-center px-4 py-2 bg-blue-600 text-white rounded-md font-medium hover:bg-blue-700 transition-colors text-sm sm:text-base shadow-sm"
                         aria-label={`View details for ${movie.Title}`}
                       >
@@ -344,7 +394,7 @@ function SearchPageContent() {
         )}
 
         {/* No Results Message */}
-        {hasSearched && !loading && results.length === 0 && (
+        {hasSearched && !loading && !loadingDatabaseMovies && results.length === 0 && (
           <div className="bg-white border-2 border-gray-300 rounded-lg p-8 sm:p-12 text-center shadow-sm">
             <p className="text-gray-600 text-base sm:text-lg text-left sm:text-center">
               No movies found. Try a different search term.
@@ -352,8 +402,8 @@ function SearchPageContent() {
           </div>
         )}
 
-        {/* Initial State - No Search Yet */}
-        {!hasSearched && !loading && (
+        {/* Initial State - No Search Yet (only show if no database movies loaded) */}
+        {!hasSearched && !loading && !loadingDatabaseMovies && results.length === 0 && (
           <div className="bg-white border-2 border-gray-300 rounded-lg p-8 sm:p-12 text-center shadow-sm">
             <p className="text-gray-600 text-base sm:text-lg">
               Enter a search term above to find movies.
