@@ -34,32 +34,14 @@ interface MovieDetails {
   Response: string;
 }
 
-interface Review {
-  _id: string;
-  rating: number;
-  comment: string;
-  userId: {
-    _id: string;
-    username: string;
-    email?: string;
-  };
-  createdAt: string;
-}
-
 export default function MovieDetailsPage() {
   const params = useParams();
   const router = useRouter();
   const { user } = useAuth();
   const imdbID = params?.imdbID as string;
   const [movie, setMovie] = useState<MovieDetails | null>(null);
-  const [reviews, setReviews] = useState<Review[]>([]);
-  const [localMovie, setLocalMovie] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [reviewForm, setReviewForm] = useState({ rating: 5, comment: "" });
-  const [showReviewForm, setShowReviewForm] = useState(false);
-  const [isFavorited, setIsFavorited] = useState(false);
-  const [isFavoriting, setIsFavoriting] = useState(false);
 
   useEffect(() => {
     async function loadMovieDetails() {
@@ -69,66 +51,8 @@ export default function MovieDetailsPage() {
         setLoading(true);
         setError("");
 
-        // Fetch movie details from remote API (OMDB)
         const movieRes = await axios.get(`/api/search/${imdbID}`);
         setMovie(movieRes.data);
-
-        // Check if movie exists in local database and fetch reviews
-        try {
-          // Search for movie by title and year in local database
-          const localMovieRes = await axios.get(`/api/movies`);
-          const localMovies = localMovieRes.data;
-          const foundLocalMovie = localMovies.find(
-            (m: any) => m.title === movieRes.data.Title && m.releaseYear === parseInt(movieRes.data.Year)
-          );
-
-          if (foundLocalMovie) {
-            setLocalMovie(foundLocalMovie);
-            
-            // Fetch reviews for this movie
-            const reviewsRes = await axios.get(`/api/movies/${foundLocalMovie._id}/reviews`);
-            const reviewsData = reviewsRes.data;
-            
-            // Fetch user info for each review
-            const reviewsWithUsers = await Promise.all(
-              reviewsData.map(async (review: any) => {
-                try {
-                  const userId = typeof review.userId === 'object' ? review.userId._id : review.userId;
-                  const userRes = await axios.get(`/api/users/${userId}?viewerId=${userId}`);
-                  return {
-                    ...review,
-                    userId: {
-                      _id: userRes.data._id || userId,
-                      username: userRes.data.username || "Unknown User",
-                      email: userRes.data.email
-                    }
-                  };
-                } catch {
-                  return {
-                    ...review,
-                    userId: {
-                      _id: typeof review.userId === 'object' ? review.userId._id : review.userId,
-                      username: "Unknown User"
-                    }
-                  };
-                }
-              })
-            );
-            
-            setReviews(reviewsWithUsers);
-
-            // Check if user has favorited this movie
-            if (user?._id) {
-              const favoritedIds = foundLocalMovie.favoritedBy?.map((u: any) => 
-                typeof u === 'string' ? u : u._id?.toString() || u.toString()
-              ) || [];
-              setIsFavorited(favoritedIds.includes(user._id));
-            }
-          }
-        } catch (localErr) {
-          console.log("Movie not found in local database or error fetching local data:", localErr);
-        }
-
         setLoading(false);
       } catch (err: any) {
         console.error("Error loading movie details:", err);
@@ -138,97 +62,8 @@ export default function MovieDetailsPage() {
     }
 
     loadMovieDetails();
-  }, [imdbID, user]);
+  }, [imdbID]);
 
-  const handleFavorite = async () => {
-    if (!user) {
-      alert("You must be logged in to favorite movies!");
-      router.push("/login");
-      return;
-    }
-
-    if (!localMovie) {
-      alert("This movie is not in our database. Please add it first.");
-      return;
-    }
-
-    if (isFavoriting) return; // Prevent multiple clicks
-
-    setIsFavoriting(true);
-    try {
-      if (isFavorited) {
-        await axios.delete(`/api/users/${user._id}/favorite/${localMovie._id}`);
-        setIsFavorited(false);
-      } else {
-        await axios.post(`/api/users/${user._id}/favorite/${localMovie._id}`);
-        setIsFavorited(true);
-      }
-    } catch (err: any) {
-      console.error("Error favoriting movie:", err);
-      alert(err.response?.data?.error || "Failed to update favorite status. Please try again.");
-    } finally {
-      setIsFavoriting(false);
-    }
-  };
-
-  const handleSubmitReview = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!user) {
-      alert("You must be logged in to write reviews!");
-      router.push("/login");
-      return;
-    }
-
-    if (!localMovie) {
-      alert("This movie is not in our database. Please add it first.");
-      return;
-    }
-
-    try {
-      await axios.post(`/api/movies/${localMovie._id}/reviews`, {
-        rating: reviewForm.rating,
-        comment: reviewForm.comment,
-        userId: user._id
-      });
-      
-      setReviewForm({ rating: 5, comment: "" });
-      setShowReviewForm(false);
-      
-      // Reload reviews
-      const reviewsRes = await axios.get(`/api/movies/${localMovie._id}/reviews`);
-      const reviewsData = reviewsRes.data;
-      
-      const reviewsWithUsers = await Promise.all(
-        reviewsData.map(async (review: any) => {
-          try {
-            const userId = typeof review.userId === 'object' ? review.userId._id : review.userId;
-            const userRes = await axios.get(`/api/users/${userId}?viewerId=${userId}`);
-            return {
-              ...review,
-              userId: {
-                _id: userRes.data._id || userId,
-                username: userRes.data.username || "Unknown User",
-                email: userRes.data.email
-              }
-            };
-          } catch {
-            return {
-              ...review,
-              userId: {
-                _id: typeof review.userId === 'object' ? review.userId._id : review.userId,
-                username: "Unknown User"
-              }
-            };
-          }
-        })
-      );
-      
-      setReviews(reviewsWithUsers);
-    } catch (err) {
-      console.error("Error submitting review:", err);
-      alert("Failed to submit review");
-    }
-  };
 
   if (loading) {
     return (
@@ -307,37 +142,21 @@ export default function MovieDetailsPage() {
               </div>
             )}
             <div className="flex-1">
-              <div className="flex items-start justify-between mb-4">
-                <div>
-                  <h1 className="text-4xl font-bold text-gray-900 mb-2">{movie.Title}</h1>
-                  <div className="flex items-center gap-3 text-gray-700 mb-4">
-                    <span className="font-medium">{movie.Year}</span>
-                    <span>•</span>
-                    <span className="px-3 py-1 bg-blue-200 text-blue-900 rounded font-medium">
-                      {movie.Genre}
-                    </span>
-                    {movie.imdbRating && movie.imdbRating !== "N/A" && (
-                      <>
-                        <span>•</span>
-                        <span className="font-bold text-yellow-600">⭐ {movie.imdbRating}/10</span>
-                      </>
-                    )}
-                  </div>
+              <div className="mb-4">
+                <h1 className="text-4xl font-bold text-gray-900 mb-2">{movie.Title}</h1>
+                <div className="flex items-center gap-3 text-gray-700 mb-4">
+                  <span className="font-medium">{movie.Year}</span>
+                  <span>•</span>
+                  <span className="px-3 py-1 bg-blue-200 text-blue-900 rounded font-medium">
+                    {movie.Genre}
+                  </span>
+                  {movie.imdbRating && movie.imdbRating !== "N/A" && (
+                    <>
+                      <span>•</span>
+                      <span className="font-bold text-yellow-600">{movie.imdbRating}/10</span>
+                    </>
+                  )}
                 </div>
-                {localMovie && user && (
-                  <button
-                    onClick={handleFavorite}
-                    disabled={isFavoriting}
-                    className={`px-4 py-2 rounded-md font-medium text-white transition-all duration-200 transform ${
-                      isFavorited 
-                        ? "bg-red-600 hover:bg-red-700 hover:scale-105 shadow-md" 
-                        : "bg-gray-400 hover:bg-red-500 hover:scale-105"
-                    } ${isFavoriting ? "opacity-50 cursor-wait" : "cursor-pointer"}`}
-                    title={isFavoriting ? "Updating..." : isFavorited ? "Remove from favorites" : "Add to favorites"}
-                  >
-                    {isFavoriting ? "Updating..." : isFavorited ? "❤️ Favorited" : "🤍 Favorite"}
-                  </button>
-                )}
               </div>
 
               {/* Movie Info */}
@@ -374,119 +193,10 @@ export default function MovieDetailsPage() {
                 )}
               </div>
 
-              {!localMovie && user && (
-                <div className="bg-yellow-100 border-2 border-yellow-400 rounded p-4 mt-4">
-                  <p className="text-yellow-900">
-                    This movie is not in our local database. Only movies in our database can be favorited or reviewed.
-                  </p>
-                </div>
-              )}
-
-              {!user && (
-                <div className="bg-blue-100 border-2 border-blue-400 rounded p-4 mt-4">
-                  <p className="text-blue-900">
-                    <Link href="/login" className="font-bold underline">Login</Link> to favorite this movie or write a review!
-                  </p>
-                </div>
-              )}
             </div>
           </div>
         </div>
 
-        {/* Local Reviews Section */}
-        {localMovie && (
-          <div className="bg-white border-2 border-gray-400 rounded-lg p-6">
-            <div className="flex justify-between items-center mb-6 pb-3 border-b-2 border-gray-300">
-              <h2 className="text-2xl font-bold text-gray-900">
-                Local Reviews ({reviews.length})
-              </h2>
-              {user && (
-                <button
-                  onClick={() => setShowReviewForm(!showReviewForm)}
-                  className="bg-blue-600 text-white px-4 py-2 rounded font-medium hover:bg-blue-700"
-                >
-                  {showReviewForm ? "Cancel" : "+ Write Review"}
-                </button>
-              )}
-            </div>
-
-            {/* Review Form */}
-            {showReviewForm && user && (
-              <form onSubmit={handleSubmitReview} className="mb-6 p-4 bg-gray-100 border-2 border-gray-300 rounded">
-                <div className="mb-4">
-                  <label className="block text-gray-900 font-bold mb-2">Rating</label>
-                  <select
-                    value={reviewForm.rating}
-                    onChange={(e) => setReviewForm({ ...reviewForm, rating: parseInt(e.target.value) })}
-                    className="w-full border-2 border-gray-400 rounded px-3 py-2 text-gray-900"
-                  >
-                    {[5, 4, 3, 2, 1].map(r => (
-                      <option key={r} value={r}>{r} Stars</option>
-                    ))}
-                  </select>
-                </div>
-                <div className="mb-4">
-                  <label className="block text-gray-900 font-bold mb-2">Comment</label>
-                  <textarea
-                    value={reviewForm.comment}
-                    onChange={(e) => setReviewForm({ ...reviewForm, comment: e.target.value })}
-                    className="w-full border-2 border-gray-400 rounded px-3 py-2 text-gray-900"
-                    rows={5}
-                    placeholder="Write your review..."
-                    required
-                  />
-                </div>
-                <button
-                  type="submit"
-                  className="bg-blue-600 text-white px-6 py-2 rounded font-medium hover:bg-blue-700"
-                >
-                  Submit Review
-                </button>
-              </form>
-            )}
-
-            {/* Reviews List */}
-            {reviews.length > 0 ? (
-              <div className="space-y-4">
-                {reviews.map((review) => (
-                  <div key={review._id} className="border-l-4 border-blue-600 pl-4 py-2 bg-gray-50 rounded">
-                    <div className="flex items-center justify-between mb-2">
-                      <div className="flex items-center gap-2">
-                        <Link
-                          href={`/profile/${review.userId._id}`}
-                          className="font-bold text-gray-900 hover:text-blue-600"
-                        >
-                          {review.userId.username}
-                        </Link>
-                        <span className="text-gray-600">•</span>
-                        <span className="text-yellow-600 font-bold">
-                          {review.rating} ⭐
-                        </span>
-                      </div>
-                      <span className="text-sm text-gray-600">
-                        {new Date(review.createdAt).toLocaleDateString()}
-                      </span>
-                    </div>
-                    <p className="text-gray-900">{review.comment}</p>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <p className="text-gray-700 italic">
-                {localMovie ? "No reviews yet. Be the first to review this movie!" : "This movie is not in our local database."}
-              </p>
-            )}
-          </div>
-        )}
-
-        {!localMovie && (
-          <div className="bg-white border-2 border-gray-400 rounded-lg p-6">
-            <h2 className="text-2xl font-bold text-gray-900 mb-4">Local Reviews</h2>
-            <p className="text-gray-700 italic">
-              This movie is not in our local database, so there are no local reviews yet.
-            </p>
-          </div>
-        )}
       </main>
     </div>
   );
