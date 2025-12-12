@@ -21,7 +21,6 @@ const Login = () => {
       const res = await axios.post('/api/auth/login', { email, password });
       const userData = res.data;
       
-      // Verify we got a valid _id
       if (!userData._id) {
         setError('Login failed: No user ID returned');
         return;
@@ -30,10 +29,8 @@ const Login = () => {
       console.log('Login successful, user data:', userData);
       
       login(userData.email, userData.roles, userData.role, userData._id);
-      // Also store viewerId for profile page
       if (typeof window !== 'undefined') {
         localStorage.setItem('viewerId', userData._id);
-        // Clear any old cached data
         localStorage.removeItem('shareoverflow/user');
         localStorage.setItem('shareoverflow/user', JSON.stringify({
           email: userData.email,
