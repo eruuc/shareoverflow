@@ -11,19 +11,22 @@ export default function Home() {
   const { user, logout } = useAuth();
   const [movies, setMovies] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [username, setUsername] = useState<string | null>(null);
 
   useEffect(() => {
     async function loadMovies() {
       try {
         if (user) {
-          // Load user's favorited movies
+          // Load user's favorited movies and get username
           const res = await axios.get(`/api/users/${user._id}`);
           setMovies(res.data.favorites || []);
+          setUsername(res.data.username || null);
         } else {
           // Load random featured movies for non-logged-in users
           const res = await axios.get("/api/movies");
           const shuffled = res.data.sort(() => Math.random() - 0.5);
           setMovies(shuffled.slice(0, 6));
+          setUsername(null);
         }
         setLoading(false);
       } catch (err) {
@@ -65,7 +68,7 @@ export default function Home() {
             <div className="flex items-center gap-4">
               {user ? (
                 <>
-                  <span className="text-sm text-gray-600">Welcome, {user.email}</span>
+                  <span className="text-sm text-gray-600">Welcome, {username || user.email}</span>
                   <button
                     onClick={() => {
                       logout();
@@ -95,7 +98,7 @@ export default function Home() {
       <main className="max-w-7xl mx-auto px-4 py-8">
         <div className="text-center mb-8">
           <h1 className="text-4xl font-bold text-gray-900 mb-4">
-            {user ? `Welcome back, ${user.email?.split('@')[0]}!` : "Welcome to ShareOverflow!"}
+            {user ? `Welcome back, ${username || user.email?.split('@')[0]}!` : "Welcome to ShareOverflow!"}
           </h1>
           <p className="text-lg text-gray-600 max-w-2xl mx-auto">
             {user
