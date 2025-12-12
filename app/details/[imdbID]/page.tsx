@@ -44,24 +44,35 @@ export default function MovieDetailsPage() {
   const [error, setError] = useState("");
 
   useEffect(() => {
-    async function loadMovieDetails() {
-      if (!imdbID) return;
+    if (!imdbID) return;
 
+    let isMounted = true;
+
+    async function loadMovieDetails() {
       try {
         setLoading(true);
         setError("");
 
         const movieRes = await axios.get(`/api/search/${imdbID}`);
-        setMovie(movieRes.data);
-        setLoading(false);
+        
+        if (isMounted) {
+          setMovie(movieRes.data);
+          setLoading(false);
+        }
       } catch (err: any) {
-        console.error("Error loading movie details:", err);
-        setError(err.response?.data?.error || "Failed to load movie details");
-        setLoading(false);
+        if (isMounted) {
+          console.error("Error loading movie details:", err);
+          setError(err.response?.data?.error || "Failed to load movie details");
+          setLoading(false);
+        }
       }
     }
 
     loadMovieDetails();
+
+    return () => {
+      isMounted = false;
+    };
   }, [imdbID]);
 
 
